@@ -1,4 +1,4 @@
 FROM eclipse-temurin:21-jre
-COPY target/*.jar app.jar
-EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+ARG JAR_FILE=target/*.jar
+ADD ${JAR_FILE} app.jar
+CMD java -jar -Dspring.profiles.active=prod app.jar
