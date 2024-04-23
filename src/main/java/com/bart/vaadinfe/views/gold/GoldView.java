@@ -1,6 +1,7 @@
 package com.bart.vaadinfe.views.gold;
 
 
+import com.bart.vaadinfe.kafka.KafkaConsumerThread;
 import com.bart.vaadinfe.views.MainLayout;
 import com.bart.vaadinfe.views.gold.ServiceHealth.Status;
 import com.vaadin.flow.component.Component;
@@ -18,24 +19,29 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
-import com.vaadin.flow.theme.lumo.LumoUtility.BoxSizing;
-import com.vaadin.flow.theme.lumo.LumoUtility.FontSize;
-import com.vaadin.flow.theme.lumo.LumoUtility.FontWeight;
-import com.vaadin.flow.theme.lumo.LumoUtility.Margin;
-import com.vaadin.flow.theme.lumo.LumoUtility.Padding;
-import com.vaadin.flow.theme.lumo.LumoUtility.TextColor;
+import com.vaadin.flow.theme.lumo.LumoUtility.*;
+import lombok.Getter;
 
+import java.util.List;
+
+@Getter
 @PageTitle("Gold")
 @Route(value = "gold", layout = MainLayout.class)
 @RouteAlias(value = "", layout = MainLayout.class)
 public class GoldView extends Main {
 
+    private final XAxis timeline;
+
     public GoldView() {
+        //kafka consumer
+        KafkaConsumerThread consumerThread = new KafkaConsumerThread("first_topic");
+        consumerThread.start();
+
+        timeline = new XAxis();
         addClassName("gold-view");
 
         Board board = new Board();
@@ -70,7 +76,7 @@ public class GoldView extends Main {
         Icon i = icon.create();
         i.addClassNames(BoxSizing.BORDER, Padding.XSMALL);
 
-        Span badge = new Span(i, new Span(prefix + percentage.toString()));
+        Span badge = new Span(i, new Span(prefix + percentage));
         badge.getElement().getThemeList().add(theme);
 
         VerticalLayout layout = new VerticalLayout(h2, span, badge);
@@ -82,22 +88,23 @@ public class GoldView extends Main {
 
     private Component createViewEvents() {
         // Header
-        Select year = new Select();
-        year.setItems("2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021");
-        year.setValue("2021");
-        year.setWidth("100px");
 
-        HorizontalLayout header = createHeader("View events", "City/month");
-        header.add(year);
+//        Select year = new Select();
+//        year.setItems("2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019");
+//        year.setValue("2021");
+//        year.setWidth("100px");
+//
+//        HorizontalLayout header = createHeader("View events", "City/month");
+//        header.add(year);
 
         // Chart
-        Chart chart = new Chart(ChartType.AREASPLINE);
+        Chart chart = new Chart(ChartType.LINE);
         Configuration conf = chart.getConfiguration();
         conf.getChart().setStyledMode(true);
 
-        XAxis xAxis = new XAxis();
-        xAxis.setCategories("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
-        conf.addxAxis(xAxis);
+        this.getTimeline().setCategories("Jan");
+
+        conf.addxAxis(timeline);
 
         conf.getyAxis().setTitle("Values");
 
@@ -105,14 +112,10 @@ public class GoldView extends Main {
         plotOptions.setPointPlacement(PointPlacement.ON);
         plotOptions.setMarker(new Marker(false));
         conf.addPlotOptions(plotOptions);
-
-        conf.addSeries(new ListSeries("Berlin", 189, 191, 291, 396, 501, 403, 609, 712, 729, 942, 1044, 1247));
-        conf.addSeries(new ListSeries("London", 138, 246, 248, 348, 352, 353, 463, 573, 778, 779, 885, 887));
-        conf.addSeries(new ListSeries("New York", 65, 65, 166, 171, 293, 302, 308, 317, 427, 429, 535, 636));
-        conf.addSeries(new ListSeries("Tokyo", 0, 11, 17, 123, 130, 142, 248, 349, 452, 454, 458, 462));
+        conf.addSeries(new ListSeries(List.of(189, 191, 291)));
 
         // Add it all together
-        VerticalLayout viewEvents = new VerticalLayout(header, chart);
+        VerticalLayout viewEvents = new VerticalLayout(chart);
         viewEvents.addClassName(Padding.LARGE);
         viewEvents.setPadding(false);
         viewEvents.setSpacing(false);
@@ -125,7 +128,7 @@ public class GoldView extends Main {
         HorizontalLayout header = createHeader("Service health", "Input / output");
 
         // Grid
-        Grid<ServiceHealth> grid = new Grid();
+        Grid<ServiceHealth> grid = new Grid<>();
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
         grid.setAllRowsVisible(true);
 
