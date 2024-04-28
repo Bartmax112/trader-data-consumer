@@ -1,5 +1,6 @@
 package com.bart.vaadinfe.kafka;
 
+import com.vaadin.flow.component.Component;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -12,10 +13,13 @@ import java.util.Properties;
 
 public class KafkaConsumerThread extends Thread{
 
-    KafkaConsumer<String, String> consumer;
+    KafkaConsumer<String, DataStructure> consumer;
     String topic;
+    Component chart;
 
-    public KafkaConsumerThread(String topic) {
+    public KafkaConsumerThread(String topic, Component chart) {
+
+        this.chart = chart;
         Properties properties = new Properties();
         properties.setProperty("bootstrap.servers","kafka-1:9092");
         properties.setProperty("key.deserializer", StringDeserializer.class.getName());
@@ -33,9 +37,9 @@ public class KafkaConsumerThread extends Thread{
         consumer.subscribe(Collections.singletonList(topic));
         try {
             while (true) {
-                ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
-                for (ConsumerRecord<String, String> record : records) {
-                    System.out.println("Received message: " + record.value());
+                ConsumerRecords<String, DataStructure> records = consumer.poll(Duration.ofMillis(100));
+                for (ConsumerRecord<String, DataStructure> record : records) {
+                    System.out.println("Received message: \n" + record.value());
                 }
             }
         } finally {

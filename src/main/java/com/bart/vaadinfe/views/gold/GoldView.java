@@ -37,17 +37,20 @@ public class GoldView extends Main {
     private final XAxis timeline;
 
     public GoldView() {
-        //kafka consumer
-        KafkaConsumerThread consumerThread = new KafkaConsumerThread("first_topic");
-        consumerThread.start();
-
         timeline = new XAxis();
         addClassName("gold-view");
+
+        var chart = createViewEvents();
+
+        //kafka consumer
+        KafkaConsumerThread consumerThread = new KafkaConsumerThread("gold", chart);
+        consumerThread.start();
+
 
         Board board = new Board();
         board.addRow(createHighlight("Current users", "745", 33.7), createHighlight("View events", "54.6k", -112.45),
                 createHighlight("Conversion rate", "18%", 3.9), createHighlight("Custom metric", "-123.45", 0.0));
-        board.addRow(createViewEvents());
+        board.addRow(chart);
         board.addRow(createServiceHealth(), createResponseTimes());
         add(board);
     }
