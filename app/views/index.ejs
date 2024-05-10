@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kafka Messages</title>
+</head>
+<body>
+    <h1>Kafka Messages</h1>
+    <ul id="messageList">
+        <!-- Messages will be added dynamically here -->
+    </ul>
+
+    <!-- Include Socket.IO library -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // Connect to the WebSocket server
+        const socket = io();
+
+        // Listen for messages from the server
+        socket.on('message', function(message) {
+            // Handle incoming messages here
+            const messageList = document.getElementById('messageList');
+            const listItem = document.createElement('li');
+            listItem.textContent = message.value; // Assuming message.value contains the actual message
+            messageList.appendChild(listItem);
+        });
+    </script>
+
+</body>
+</html>
